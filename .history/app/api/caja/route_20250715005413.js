@@ -9,7 +9,7 @@ export async function PATCH(req) {
     }
 
     const client = await clientPromise;
-    const db = client.db("comandas2");
+    const db = client.db("comandas");
 
     await db.collection("cajaRegistradora").updateOne(
       {},

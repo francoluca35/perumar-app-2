@@ -13,7 +13,7 @@ export async function POST(req) {
     const montoAIngresar = totalPedido; // el neto de la venta que ingresa a la caja
 
     const client = await clientPromise;
-    const db = client.db("comandas2");
+    const db = client.db("comandas");
 
     const caja = await db.collection("cajaRegistradora").findOne({});
     if (!caja) {

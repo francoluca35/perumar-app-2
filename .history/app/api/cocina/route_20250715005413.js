@@ -5,7 +5,7 @@ export async function POST(req) {
   try {
     const data = await req.json();
     const client = await clientPromise;
-    const db = client.db("comandas2");
+    const db = client.db("comandas");
 
     const nuevoPedido = {
       mesa: data.mesa,
@@ -29,7 +29,7 @@ export async function POST(req) {
 export async function GET() {
   try {
     const client = await clientPromise;
-    const db = client.db("comandas2");
+    const db = client.db("comandas");
     const pedidos = await db
       .collection("cocina")
       .find()
@@ -50,7 +50,7 @@ export async function DELETE(req) {
     const { mesa } = await req.json();
 
     const client = await clientPromise;
-    const db = client.db("comandas2");
+    const db = client.db("comandas");
 
     await db.collection("cocina").deleteOne({ mesa });
 

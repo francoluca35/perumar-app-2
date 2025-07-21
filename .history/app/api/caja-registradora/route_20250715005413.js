@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 export async function GET() {
   try {
     const client = await clientPromise;
-    const db = client.db("comandas2");
+    const db = client.db("comandas");
     const caja = await db.collection("cajaRegistradora").findOne({});
     return NextResponse.json({
       montoActual: caja?.montoActual || 0,
@@ -22,7 +22,7 @@ export async function POST(req) {
   try {
     const pedido = await req.json();
     const client = await clientPromise;
-    const db = client.db("comandas2");
+    const db = client.db("comandas");
 
     const collection = db.collection("pedidos");
     const resultado = await collection.insertOne({
@@ -76,7 +76,7 @@ export async function PATCH(req) {
     }
 
     const client = await clientPromise;
-    const db = client.db("comandas2");
+    const db = client.db("comandas");
 
     await db.collection("cajaRegistradora").updateOne(
       {},

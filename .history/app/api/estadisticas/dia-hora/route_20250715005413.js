@@ -3,7 +3,7 @@ import clientPromise from "@/lib/mongodb";
 export async function GET() {
   try {
     const client = await clientPromise;
-    const db = client.db("comandas2");
+    const db = client.db("comandas");
 
     const tablaClientesDiaHora = await db
       .collection("datos_clientes")

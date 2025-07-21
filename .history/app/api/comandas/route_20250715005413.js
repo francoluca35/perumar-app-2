@@ -6,9 +6,9 @@ export async function POST(req) {
     const comanda = await req.json();
 
     const client = await clientPromise;
-    const db = client.db("comandas2");
+    const db = client.db("comandas");
 
-    await db.collection("comandas2").insertOne(comanda);
+    await db.collection("comandas").insertOne(comanda);
 
     return NextResponse.json({ success: true });
   } catch (error) {

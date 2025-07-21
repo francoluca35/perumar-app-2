@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 export async function POST() {
   try {
     const client = await clientPromise;
-    const db = client.db("comandas2");
+    const db = client.db("comandas");
 
     const hoy = new Date();
     const inicioDia = new Date(

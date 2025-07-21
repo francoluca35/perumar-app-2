@@ -6,7 +6,7 @@ export async function POST(req) {
   const { monto, fecha } = body; // fecha = "9/7/2025" o similar
 
   const client = await clientPromise;
-  const db = client.db("comandas2");
+  const db = client.db("comandas");
 
   // Sumar a ingresosDiarios
   await db.collection("ingresosDiarios").updateOne(
