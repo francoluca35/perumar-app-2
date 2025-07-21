@@ -1,11 +1,11 @@
-import clientPromise from "@/lib/mongodb";
+import clientPromise from "@/lib/firebaseuser";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
   const { username } = await req.json();
 
   const client = await clientPromise;
-  const db = client.db("comandas");
+  const db = client.db("comandas2");
 
   const turno = await db
     .collection("turnos")
