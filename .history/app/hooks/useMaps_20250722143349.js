@@ -12,10 +12,10 @@ export default function useMaps() {
       const data = await res.json();
 
       if (Array.isArray(data)) {
-        setPedidos(data);
+        setPedidos(data); // ✅ solo si es array
       } else {
         console.error("Respuesta inesperada:", data);
-        setPedidos([]);
+        setPedidos([]); // fallback vacío para evitar error en .filter
       }
     } catch (error) {
       console.error("Error al cargar pedidos:", error);

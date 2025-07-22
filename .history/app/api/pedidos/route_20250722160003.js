@@ -1,29 +1,6 @@
 import { db } from "@/lib/firebase";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, addDoc, Timestamp } from "firebase/firestore";
 import { NextResponse } from "next/server";
-
-export async function GET() {
-  try {
-    const pedidosRef = collection(db, "pedidos");
-
-    // Ordenar por timestamp descendente si existe
-    const q = query(pedidosRef, orderBy("timestamp", "desc"));
-    const snapshot = await getDocs(q);
-
-    const pedidos = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-
-    return NextResponse.json(pedidos);
-  } catch (error) {
-    console.error("Error al obtener pedidos:", error);
-    return NextResponse.json(
-      { error: "Error al obtener pedidos" },
-      { status: 500 }
-    );
-  }
-}
 
 export async function POST(req) {
   try {
@@ -51,6 +28,25 @@ export async function POST(req) {
     console.error("🔥 Error en POST /api/pedidos:", error);
     return NextResponse.json(
       { error: "Error al guardar el pedido" },
+      { status: 500 }
+    );
+  }
+}
+export async function GET() {
+  try {
+    const q = query(collection(db, "pedidos"), orderBy("timestamp", "desc"));
+    const querySnapshot = await getDocs(q);
+
+    const pedidos = querySnapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return NextResponse.json(pedidos); // ✅ esto debe ser un array
+  } catch (error) {
+    console.error("🔥 Error en GET /api/pedidos:", error);
+    return NextResponse.json(
+      { error: "Error al obtener pedidos" },
       { status: 500 }
     );
   }

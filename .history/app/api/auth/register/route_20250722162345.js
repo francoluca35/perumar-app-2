@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { hashPassword } from "@/utils/encrypt";
 import cloudinary from "@/lib/cloudinary";
 import { doc, setDoc, getDocs, collection } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { firestore } from "@/lib/firebase";
 
 export async function POST(req) {
   try {
@@ -33,7 +33,8 @@ export async function POST(req) {
     const hashed = await hashPassword(password);
 
     // 📦 Verificar duplicados
-    const snapshot = await getDocs(collection(db, "users"));
+    const snapshot = await getDocs(collection(firestore, "users"));
+
     const yaExiste = snapshot.docs.some((doc) => {
       const data = doc.data();
       return data.username === username || data.email === email;
@@ -46,9 +47,9 @@ export async function POST(req) {
       );
     }
 
-    // 📝 Guardar usuario
+    // 📝 Guardar
     const id = crypto.randomUUID();
-    await setDoc(doc(db, "users", id), {
+    await setDoc(doc(firestore, "users", id), {
       id,
       username,
       email,

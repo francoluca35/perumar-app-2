@@ -150,10 +150,11 @@ export default function Maps() {
       const nuevoEstado =
         pedido.tipo === "delivery" ? "en camino" : "entregado";
 
+      // 1. Actualiza estado en Firestore
       await fetch("/api/maps/estado", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: pedido.id, nuevoEstado }),
+        body: JSON.stringify({ id: pedido._id, nuevoEstado }),
       });
 
       // 2. Suma a la caja si es entrega local

@@ -6,20 +6,13 @@ export default function useMaps() {
 
   const fetchPedidos = async () => {
     try {
-      const res = await fetch("/api/pedidos", {
+      const res = await fetch("/api/maps", {
         cache: "no-store",
       });
       const data = await res.json();
-
-      if (Array.isArray(data)) {
-        setPedidos(data);
-      } else {
-        console.error("Respuesta inesperada:", data);
-        setPedidos([]);
-      }
+      setPedidos(data);
     } catch (error) {
       console.error("Error al cargar pedidos:", error);
-      setPedidos([]);
     } finally {
       setLoading(false);
     }
@@ -29,5 +22,5 @@ export default function useMaps() {
     fetchPedidos();
   }, []);
 
-  return { pedidos, loading, refetch: fetchPedidos };
+  return { pedidos, loading, refetch: fetchPedidos }; // <- ⚠️ agrega refetch
 }

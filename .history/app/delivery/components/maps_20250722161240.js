@@ -4,8 +4,6 @@ import { useState } from "react";
 import useMaps from "@/app/hooks/useMaps";
 import BackArrow from "@/app/components/ui/BackArrow";
 import useProductos from "@/app/hooks/useProductos";
-import { ref as dbRef, set } from "firebase/database";
-import { realtimeDB } from "@/lib/firebase";
 
 export default function Maps() {
   const { pedidos, loading, refetch } = useMaps();
@@ -150,10 +148,11 @@ export default function Maps() {
       const nuevoEstado =
         pedido.tipo === "delivery" ? "en camino" : "entregado";
 
+      // 1. Actualiza estado en Firestore
       await fetch("/api/maps/estado", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: pedido.id, nuevoEstado }),
+        body: JSON.stringify({ id: pedido._id, nuevoEstado }),
       });
 
       // 2. Suma a la caja si es entrega local

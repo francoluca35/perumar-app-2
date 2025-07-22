@@ -74,7 +74,7 @@ export default function RutaDelivery() {
         ) : (
           pedidosEnCamino.map((pedido) => (
             <TarjetaPedido
-              key={pedido.id}
+              key={pedido._id}
               pedido={pedido}
               onEntregar={marcarEntregado}
             />

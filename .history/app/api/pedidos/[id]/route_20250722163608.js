@@ -1,16 +1,16 @@
-import { NextResponse } from "next/server";
+import { firestore } from "@/lib/firebase";
 import { doc, updateDoc, getDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase"; // o donde esté tu instancia Firestore
+import { NextResponse } from "next/server";
 
 export async function PUT(req) {
   try {
     const { id, horaEntrega } = await req.json();
 
-    if (!id) {
-      return NextResponse.json({ error: "Falta el ID" }, { status: 400 });
+    if (!id || !horaEntrega) {
+      return NextResponse.json({ error: "Faltan datos" }, { status: 400 });
     }
 
-    const pedidoRef = doc(db, "pedidos", id);
+    const pedidoRef = doc(firestore, "pedidos", id);
     const pedidoSnap = await getDoc(pedidoRef);
 
     if (!pedidoSnap.exists()) {
@@ -22,20 +22,18 @@ export async function PUT(req) {
 
     const pedido = pedidoSnap.data();
 
-    // ✅ Actualizar estado y hora de entrega
+    // Marcar como entregado
     await updateDoc(pedidoRef, {
       estado: "entregado",
-      horaEntrega: horaEntrega || new Date().toISOString(),
+      horaEntrega,
     });
 
-    // ✅ Si pagó en efectivo, sumar a la caja
+    // Si fue pago en efectivo, sumar a la caja
     if (pedido.formaDePago === "efectivo") {
-      const cajaRef = doc(db, "cajaRegistradora", "estado");
+      const cajaRef = doc(firestore, "caja", "actual");
       await updateDoc(cajaRef, {
-        montoActual: pedido.total || 0,
+        montoActual: pedido.total + (pedido.totalMP || 0), // incluye extra si existe
       });
-      // ⚠️ Esto reemplaza el monto. Si querés sumarlo:
-      // usar transaction o increment()
     }
 
     return NextResponse.json({ success: true });

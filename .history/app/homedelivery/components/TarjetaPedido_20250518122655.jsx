@@ -56,7 +56,7 @@ export default function TarjetaPedido({ pedido, entregado = false }) {
         ) : (
           <Boton
             color="gray"
-            onClick={() => router.push(`/vermapa?id=${pedido.id}`)}
+            onClick={() => router.push(`/vermapa?id=${pedido._id}`)}
           >
             <FiMapPin /> Ver Mapa
           </Boton>
