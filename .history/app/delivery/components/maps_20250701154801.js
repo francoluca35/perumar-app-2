@@ -4,8 +4,6 @@ import { useState } from "react";
 import useMaps from "@/app/hooks/useMaps";
 import BackArrow from "@/app/components/ui/BackArrow";
 import useProductos from "@/app/hooks/useProductos";
-import { ref as dbRef, set } from "firebase/database";
-import { realtimeDB } from "@/lib/firebase";
 
 export default function Maps() {
   const { pedidos, loading, refetch } = useMaps();
@@ -142,9 +140,9 @@ export default function Maps() {
   };
 
   const handleEnviar = async (pedido) => {
-    setEnviandoId(pedido.id || pedido._id);
+    setEnviandoId(pedido._id);
 
-    imprimirTicketPOS(pedido); // opcional: antes de cambiar estado
+    imprimirTicketPOS(pedido);
 
     try {
       const nuevoEstado =
@@ -153,10 +151,9 @@ export default function Maps() {
       await fetch("/api/maps/estado", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: pedido.id, nuevoEstado }),
+        body: JSON.stringify({ id: pedido._id, nuevoEstado }),
       });
 
-      // 2. Suma a la caja si es entrega local
       if (pedido.tipo === "entregalocal") {
         await fetch("/api/caja-registradora", {
           method: "PATCH",
@@ -164,8 +161,6 @@ export default function Maps() {
           body: JSON.stringify({ monto: pedido.total }),
         });
       }
-
-      // 3. Registra ingreso diario
       await fetch("/api/informe-diario", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -175,18 +170,8 @@ export default function Maps() {
         }),
       });
 
-      // 4. Si es delivery => lo manda al repartidor por Realtime DB
-      if (pedido.tipo === "delivery") {
-        await set(dbRef(realtimeDB, `envios/${pedido._id}`), {
-          ...pedido,
-          estado: "en camino",
-          enviadoEn: new Date().toISOString(),
-        });
-      }
-
-      imprimirTicketPOS(pedido); // opcional: también acá si lo querés duplicar
-
-      await refetch(); // actualiza la lista
+      imprimirTicketPOS(pedido);
+      await refetch();
     } catch (err) {
       console.error("Error al enviar:", err);
     } finally {
@@ -243,7 +228,7 @@ export default function Maps() {
         <ul className="space-y-4">
           {pedidosFiltrados.map((pedido) => (
             <li
-              key={pedido.id}
+              key={pedido._id}
               className="bg-white/10 border border-white/10 rounded-xl p-5 shadow-md flex flex-col md:flex-row md:items-center md:justify-between"
             >
               <div>

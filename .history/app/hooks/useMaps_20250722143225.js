@@ -10,16 +10,9 @@ export default function useMaps() {
         cache: "no-store",
       });
       const data = await res.json();
-
-      if (Array.isArray(data)) {
-        setPedidos(data);
-      } else {
-        console.error("Respuesta inesperada:", data);
-        setPedidos([]);
-      }
+      setPedidos(data);
     } catch (error) {
       console.error("Error al cargar pedidos:", error);
-      setPedidos([]);
     } finally {
       setLoading(false);
     }

@@ -1,10 +1,10 @@
-import { db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { NextResponse } from "next/server";
 
-export async function GET(req, context) {
+export async function GET(req, { params }) {
   try {
-    const { id } = context.params;
+    const { id } = params;
 
     if (!id) {
       return NextResponse.json({ error: "Falta el ID" }, { status: 400 });
@@ -20,9 +20,13 @@ export async function GET(req, context) {
       );
     }
 
-    return NextResponse.json(pedidoSnap.data());
+    const data = pedidoSnap.data();
+    return NextResponse.json(data);
   } catch (error) {
     console.error("Error al obtener el pedido:", error);
-    return NextResponse.json({ error: "Error del servidor" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error al obtener el pedido" },
+      { status: 500 }
+    );
   }
 }

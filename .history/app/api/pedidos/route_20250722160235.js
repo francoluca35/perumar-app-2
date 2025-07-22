@@ -4,20 +4,17 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const pedidosRef = collection(db, "pedidos");
+    const q = query(collection(db, "pedidos"), orderBy("timestamp", "desc"));
+    const querySnapshot = await getDocs(q);
 
-    // Ordenar por timestamp descendente si existe
-    const q = query(pedidosRef, orderBy("timestamp", "desc"));
-    const snapshot = await getDocs(q);
-
-    const pedidos = snapshot.docs.map((doc) => ({
+    const pedidos = querySnapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
     }));
 
     return NextResponse.json(pedidos);
   } catch (error) {
-    console.error("Error al obtener pedidos:", error);
+    console.error("🔥 Error en GET /api/pedidos:", error);
     return NextResponse.json(
       { error: "Error al obtener pedidos" },
       { status: 500 }

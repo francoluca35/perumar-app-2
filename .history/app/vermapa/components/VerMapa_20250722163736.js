@@ -30,14 +30,13 @@ export default function VerMapa() {
       fetch(`/api/pedidos/${id}`)
         .then(async (res) => {
           if (!res.ok) {
-            const errorText = await res.text();
+            const errorText = await res.text(); // por si el servidor devuelve texto de error
             throw new Error(
               `Error al obtener el pedido: ${res.status} - ${errorText}`
             );
           }
           return res.json();
         })
-
         .then((data) => setPedido(data))
         .catch((err) => {
           console.error("Fallo al cargar el pedido:", err.message);

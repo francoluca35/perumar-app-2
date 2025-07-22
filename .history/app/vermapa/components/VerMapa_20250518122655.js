@@ -28,20 +28,8 @@ export default function VerMapa() {
   useEffect(() => {
     if (id) {
       fetch(`/api/pedidos/${id}`)
-        .then(async (res) => {
-          if (!res.ok) {
-            const errorText = await res.text();
-            throw new Error(
-              `Error al obtener el pedido: ${res.status} - ${errorText}`
-            );
-          }
-          return res.json();
-        })
-
-        .then((data) => setPedido(data))
-        .catch((err) => {
-          console.error("Fallo al cargar el pedido:", err.message);
-        });
+        .then((res) => res.json())
+        .then((data) => setPedido(data));
     }
   }, [id]);
 

@@ -15,7 +15,7 @@ export default function useMaps() {
         setPedidos(data);
       } else {
         console.error("Respuesta inesperada:", data);
-        setPedidos([]);
+        setPedidos([]); // fallback vacío para evitar error en .filter
       }
     } catch (error) {
       console.error("Error al cargar pedidos:", error);
