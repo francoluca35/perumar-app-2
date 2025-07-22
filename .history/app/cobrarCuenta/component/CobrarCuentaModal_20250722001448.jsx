@@ -42,28 +42,20 @@ export default function CobrarCuentaModal({
     setVuelto(!isNaN(pago) ? (pago - totalFinal).toFixed(2) : 0);
   }, [montoPagado, totalFinal]);
 
-  const limpiarMesa = async () => {
-    try {
-      await fetch("/api/mesas", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          codigo: mesa.codigo,
-          numero: mesa.numero,
-          productos: [],
-          metodoPago: "",
-          total: 0,
-          estado: "libre",
-          hora: "",
-          fecha: "",
-          tipoMesa: mesa.tipoMesa,
-        }),
-      });
-
-      console.log("✅ Mesa liberada correctamente");
-    } catch (error) {
-      console.error("❌ Error al liberar la mesa:", error);
-    }
+  const limpiarMesa = async (monto, metodoPago) => {
+    await fetch("/api/mesas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        codigo: mesa.codigo,
+        productos: [],
+        metodoPago,
+        total: monto,
+        estado: "libre",
+        hora: "",
+        fecha: "",
+      }),
+    });
   };
 
   const guardarTicket = async (monto, metodoPago) => {
@@ -81,7 +73,6 @@ export default function CobrarCuentaModal({
   const procesarPagoEfectivo = async () => {
     const fechaActual = new Date().toISOString();
 
-    // 1. Guardar el pedido
     await fetch("/api/pedidos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -95,27 +86,22 @@ export default function CobrarCuentaModal({
       }),
     });
 
-    // 2. Guardar en informe diario
     await fetch("/api/informe-diario", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ totalPedido: totalFinal, timestamp: fechaActual }),
     });
 
-    // 3. Enviar a Firebase para imprimir
     await guardarTicket(totalFinal, "Efectivo");
 
-    // 4. Sumar a caja
     await fetch("/api/caja/sumar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ total: totalFinal }),
     });
 
-    // 5. Liberar la mesa (solo una vez)
-    await limpiarMesa();
+    await limpiarMesa(totalFinal, "Efectivo");
 
-    // 6. Confirmación visual
     Swal.fire({
       icon: "success",
       title: "Pago en efectivo registrado",
@@ -123,7 +109,6 @@ export default function CobrarCuentaModal({
       showConfirmButton: false,
     });
 
-    // 7. Refrescar estado
     refetch?.();
     onClose();
   };
@@ -290,7 +275,7 @@ export default function CobrarCuentaModal({
           </p>
           <button
             onClick={async () => {
-              await limpiarMesa();
+              await limpiarMesa(totalMP, "Mercado Pago");
               refetch?.();
               onClose();
             }}

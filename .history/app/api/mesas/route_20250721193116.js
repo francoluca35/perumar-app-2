@@ -1,5 +1,5 @@
 import { db } from "@/lib/firebase";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { NextResponse } from "next/server";
 
 export async function POST(req) {
@@ -23,7 +23,19 @@ export async function POST(req) {
       );
     }
 
-    // 🔄 Solo actualizamos el documento global en 'tables/estadoMesas'
+    // 1. Guardar en colección 'mesas'
+    const mesaRef = doc(db, "mesas", codigo);
+    await setDoc(mesaRef, {
+      numero,
+      productos,
+      metodoPago,
+      total,
+      estado,
+      hora,
+      fecha,
+    });
+
+    // 2. Actualizar también el estado en 'tables/estadoMesas'
     const estadoRef = doc(db, "tables", "estadoMesas");
     const estadoSnap = await getDoc(estadoRef);
 
@@ -37,6 +49,7 @@ export async function POST(req) {
     const data = estadoSnap.data();
     const mesas = data[tipoMesa];
 
+    // Buscamos la mesa a actualizar
     const index = mesas.findIndex((m) => m.codigo === codigo);
     if (index !== -1) {
       mesas[index] = {
@@ -51,6 +64,7 @@ export async function POST(req) {
       };
     }
 
+    // Guardamos los cambios
     await updateDoc(estadoRef, {
       [tipoMesa]: mesas,
     });
@@ -64,6 +78,7 @@ export async function POST(req) {
     );
   }
 }
+
 export async function GET() {
   try {
     const docRef = doc(db, "tables", "estadoMesas");
@@ -72,7 +87,6 @@ export async function GET() {
     if (docSnap.exists()) {
       return NextResponse.json([docSnap.data()]);
     } else {
-      // Devuelve estructura vacía si no existe el documento
       return NextResponse.json([
         { mesaAdentro: [], mesaAdentro2: [], mesaAfuera: [] },
       ]);

@@ -81,7 +81,6 @@ export default function CobrarCuentaModal({
   const procesarPagoEfectivo = async () => {
     const fechaActual = new Date().toISOString();
 
-    // 1. Guardar el pedido
     await fetch("/api/pedidos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -94,28 +93,24 @@ export default function CobrarCuentaModal({
         fecha: fechaActual,
       }),
     });
+    await limpiarMesa();
 
-    // 2. Guardar en informe diario
     await fetch("/api/informe-diario", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ totalPedido: totalFinal, timestamp: fechaActual }),
     });
 
-    // 3. Enviar a Firebase para imprimir
     await guardarTicket(totalFinal, "Efectivo");
 
-    // 4. Sumar a caja
     await fetch("/api/caja/sumar", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ total: totalFinal }),
     });
 
-    // 5. Liberar la mesa (solo una vez)
-    await limpiarMesa();
+    await limpiarMesa(totalFinal, "Efectivo");
 
-    // 6. Confirmación visual
     Swal.fire({
       icon: "success",
       title: "Pago en efectivo registrado",
@@ -123,7 +118,6 @@ export default function CobrarCuentaModal({
       showConfirmButton: false,
     });
 
-    // 7. Refrescar estado
     refetch?.();
     onClose();
   };
@@ -290,7 +284,7 @@ export default function CobrarCuentaModal({
           </p>
           <button
             onClick={async () => {
-              await limpiarMesa();
+              await limpiarMesa(totalMP, "Mercado Pago");
               refetch?.();
               onClose();
             }}
