@@ -24,6 +24,7 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
       setMetodoPago(mesa.metodoPago || "");
     }
   }, [mesa]);
+
   const imprimirTicket = async (productos, mesa, orden, hora, fecha) => {
     const parrilla = productos.filter(
       (p) => p.categoria?.toLowerCase() === "brasas"
@@ -54,6 +55,7 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
       }
     };
 
+    // 🔸 NO usamos try/catch aquí, ya están controlados dentro de cada llamada
     await enviarAImpresora(parrilla, "192.168.0.101");
     await enviarAImpresora(cocina, "192.168.0.100");
   };
@@ -89,7 +91,6 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
     try {
       await fetch("/api/mesas", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           codigo: mesa.codigo,
           numero: mesa.numero,
@@ -99,12 +100,8 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
           estado: "ocupado",
           hora,
           fecha,
-          tipoMesa: mesa.tipoMesa,
         }),
       });
-
-      // ✅ Llamar a imprimir el ticket luego de guardar
-      await imprimirTicket(productosTotales, mesa, orden, hora, fecha);
 
       await Swal.fire({
         icon: "success",
@@ -145,7 +142,6 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
           estado: "libre",
           hora: "",
           fecha: "",
-          tipoMesa: mesa.tipoMesa, // ✅ Esto es fundamental
         }),
       });
 

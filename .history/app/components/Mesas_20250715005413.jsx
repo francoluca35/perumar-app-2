@@ -15,20 +15,11 @@ export default function Mesas() {
   let mesasFiltradas = [];
 
   if (tipoSeleccionado === "adentroA") {
-    mesasFiltradas = (mesas.mesaAdentro || []).map((m) => ({
-      ...m,
-      tipoMesa: "mesaAdentro",
-    }));
+    mesasFiltradas = mesas.mesaAdentro || [];
   } else if (tipoSeleccionado === "adentroB") {
-    mesasFiltradas = (mesas.mesaAdentro2 || []).map((m) => ({
-      ...m,
-      tipoMesa: "mesaAdentro2",
-    }));
+    mesasFiltradas = mesas.mesaAdentro2 || [];
   } else if (tipoSeleccionado === "afuera") {
-    mesasFiltradas = (mesas.mesaAfuera || []).map((m) => ({
-      ...m,
-      tipoMesa: "mesaAfuera",
-    }));
+    mesasFiltradas = mesas.mesaAfuera || [];
   }
 
   return (

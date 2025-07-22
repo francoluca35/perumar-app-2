@@ -24,6 +24,7 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
       setMetodoPago(mesa.metodoPago || "");
     }
   }, [mesa]);
+
   const imprimirTicket = async (productos, mesa, orden, hora, fecha) => {
     const parrilla = productos.filter(
       (p) => p.categoria?.toLowerCase() === "brasas"
@@ -48,14 +49,16 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
             ip,
           }),
         });
-        if (!res.ok) throw new Error("No se pudo imprimir");
+        if (!res.ok) throw new Error();
       } catch (err) {
-        console.warn(`⚠️ No se pudo imprimir en ${ip}:`, err.message);
+        console.error("Error al imprimir:", err);
+        Swal.fire("Error", "No se pudo imprimir el ticket", "error");
       }
     };
 
-    await enviarAImpresora(parrilla, "192.168.0.101");
-    await enviarAImpresora(cocina, "192.168.0.100");
+    await enviarAImpresora(parrilla, "192.168.0.101"); // Impresora de parrilla
+    await enviarAImpresora(cocina, "192.168.0.100"); // ✅ correcto
+    // Impresora de cocina
   };
 
   const enviarPedido = async () => {
@@ -77,9 +80,7 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
 
     const fecha = new Date().toLocaleDateString("es-AR");
     const orden = Date.now();
-
     const productosTotales = [...historial, ...pedidoActual];
-
     const total = productosTotales.reduce(
       (acc, p) =>
         acc + (p.precio * p.cantidad - (p.descuento || 0) * p.cantidad),
@@ -99,12 +100,8 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
           estado: "ocupado",
           hora,
           fecha,
-          tipoMesa: mesa.tipoMesa,
         }),
       });
-
-      // ✅ Llamar a imprimir el ticket luego de guardar
-      await imprimirTicket(productosTotales, mesa, orden, hora, fecha);
 
       await Swal.fire({
         icon: "success",
@@ -113,11 +110,12 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
         timer: 2000,
       });
 
+      await imprimirTicket(productosTotales, mesa.numero, orden, hora, fecha);
       setHistorial(productosTotales);
       setPedidoActual([]);
       refetch?.();
     } catch (err) {
-      console.error("❌ Error al guardar en la base de datos:", err);
+      console.error("Error al guardar en la base de datos:", err);
       Swal.fire({
         icon: "error",
         title: "Error",
@@ -125,7 +123,6 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
       });
     }
   };
-
   const eliminarComanda = async () => {
     const confirmar = confirm(
       "¿Seguro que querés liberar la mesa sin comanda?"
@@ -145,7 +142,6 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
           estado: "libre",
           hora: "",
           fecha: "",
-          tipoMesa: mesa.tipoMesa, // ✅ Esto es fundamental
         }),
       });
 

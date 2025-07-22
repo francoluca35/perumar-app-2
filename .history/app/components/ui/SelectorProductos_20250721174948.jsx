@@ -203,7 +203,7 @@ export default function SelectorProductos({ productos, onSelect, onClose }) {
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
           {productosFiltrados.map((p, index) => (
             <button
-              key={p.codigo || p._id || `${p.nombre}-${index}`}
+              key={p._id || `${p.nombre}-${index}`}
               className="bg-white/10 border border-white/10 rounded-xl p-2 flex flex-col items-center hover:bg-white/20 transition"
               onClick={() => {
                 setProductoSeleccionado(p);

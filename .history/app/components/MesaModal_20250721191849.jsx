@@ -24,6 +24,7 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
       setMetodoPago(mesa.metodoPago || "");
     }
   }, [mesa]);
+
   const imprimirTicket = async (productos, mesa, orden, hora, fecha) => {
     const parrilla = productos.filter(
       (p) => p.categoria?.toLowerCase() === "brasas"
@@ -39,7 +40,7 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            mesa,
+            mesa: mesa.numero, // ✅ Asegura que se pasa el número
             productos: items,
             orden,
             hora,
@@ -48,14 +49,16 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
             ip,
           }),
         });
-        if (!res.ok) throw new Error("No se pudo imprimir");
+        if (!res.ok) throw new Error();
       } catch (err) {
-        console.warn(`⚠️ No se pudo imprimir en ${ip}:`, err.message);
+        console.error("Error al imprimir:", err);
+        Swal.fire("Error", "No se pudo imprimir el ticket", "error");
       }
     };
 
-    await enviarAImpresora(parrilla, "192.168.0.101");
-    await enviarAImpresora(cocina, "192.168.0.100");
+    await enviarAImpresora(parrilla, "192.168.0.101"); // Impresora de parrilla
+    await enviarAImpresora(cocina, "192.168.0.100"); // ✅ correcto
+    // Impresora de cocina
   };
 
   const enviarPedido = async () => {
@@ -77,9 +80,7 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
 
     const fecha = new Date().toLocaleDateString("es-AR");
     const orden = Date.now();
-
     const productosTotales = [...historial, ...pedidoActual];
-
     const total = productosTotales.reduce(
       (acc, p) =>
         acc + (p.precio * p.cantidad - (p.descuento || 0) * p.cantidad),
@@ -87,9 +88,9 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
     );
 
     try {
+      // 🔸 Primero guardar la mesa como ocupada
       await fetch("/api/mesas", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           codigo: mesa.codigo,
           numero: mesa.numero,
@@ -99,12 +100,17 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
           estado: "ocupado",
           hora,
           fecha,
-          tipoMesa: mesa.tipoMesa,
         }),
       });
 
-      // ✅ Llamar a imprimir el ticket luego de guardar
-      await imprimirTicket(productosTotales, mesa, orden, hora, fecha);
+      // 🔸 Luego intentar imprimir, si falla no afecta lo anterior
+      try {
+        await imprimirTicket(productosTotales, mesa.numero, orden, hora, fecha);
+      } catch (error) {
+        console.warn(
+          "⚠️ Error al imprimir el ticket, pero la mesa fue ocupada."
+        );
+      }
 
       await Swal.fire({
         icon: "success",
@@ -145,7 +151,6 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
           estado: "libre",
           hora: "",
           fecha: "",
-          tipoMesa: mesa.tipoMesa, // ✅ Esto es fundamental
         }),
       });
 

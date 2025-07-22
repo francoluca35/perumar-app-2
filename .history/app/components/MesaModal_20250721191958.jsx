@@ -24,6 +24,7 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
       setMetodoPago(mesa.metodoPago || "");
     }
   }, [mesa]);
+
   const imprimirTicket = async (productos, mesa, orden, hora, fecha) => {
     const parrilla = productos.filter(
       (p) => p.categoria?.toLowerCase() === "brasas"
@@ -54,6 +55,7 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
       }
     };
 
+    // 🔸 NO usamos try/catch aquí, ya están controlados dentro de cada llamada
     await enviarAImpresora(parrilla, "192.168.0.101");
     await enviarAImpresora(cocina, "192.168.0.100");
   };
@@ -77,9 +79,7 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
 
     const fecha = new Date().toLocaleDateString("es-AR");
     const orden = Date.now();
-
     const productosTotales = [...historial, ...pedidoActual];
-
     const total = productosTotales.reduce(
       (acc, p) =>
         acc + (p.precio * p.cantidad - (p.descuento || 0) * p.cantidad),
@@ -87,9 +87,9 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
     );
 
     try {
+      // 🔸 Primero guardar la mesa como ocupada
       await fetch("/api/mesas", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           codigo: mesa.codigo,
           numero: mesa.numero,
@@ -99,12 +99,17 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
           estado: "ocupado",
           hora,
           fecha,
-          tipoMesa: mesa.tipoMesa,
         }),
       });
 
-      // ✅ Llamar a imprimir el ticket luego de guardar
-      await imprimirTicket(productosTotales, mesa, orden, hora, fecha);
+      // 🔸 Luego intentar imprimir, si falla no afecta lo anterior
+      try {
+        await imprimirTicket(productosTotales, mesa.numero, orden, hora, fecha);
+      } catch (error) {
+        console.warn(
+          "⚠️ Error al imprimir el ticket, pero la mesa fue ocupada."
+        );
+      }
 
       await Swal.fire({
         icon: "success",
@@ -145,7 +150,6 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
           estado: "libre",
           hora: "",
           fecha: "",
-          tipoMesa: mesa.tipoMesa, // ✅ Esto es fundamental
         }),
       });
 

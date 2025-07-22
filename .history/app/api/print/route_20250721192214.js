@@ -1,12 +1,11 @@
 import { NextResponse } from "next/server";
-
-// Enviamos el pedido al servidor local del LOCAL 2 (u otro) mediante NGROK
+//cambio en ignore
 export async function POST(req) {
   try {
     const body = await req.json();
 
     const response = await fetch(
-      "https://right-worthy-collie.ngrok-free.app/print",
+      "https://right-worthy-collie.ngrok-free.app/print", // Tu servidor local con ngrok
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -17,7 +16,7 @@ export async function POST(req) {
     const data = await response.json();
     return NextResponse.json({ success: true, data });
   } catch (err) {
-    console.error("❌ Error al conectar con servidor local:", err);
+    console.error("Error al conectar con servidor local:", err);
     return NextResponse.json(
       { error: "Error al imprimir desde Vercel" },
       { status: 500 }

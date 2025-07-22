@@ -64,24 +64,3 @@ export async function POST(req) {
     );
   }
 }
-export async function GET() {
-  try {
-    const docRef = doc(db, "tables", "estadoMesas");
-    const docSnap = await getDoc(docRef);
-
-    if (docSnap.exists()) {
-      return NextResponse.json([docSnap.data()]);
-    } else {
-      // Devuelve estructura vacía si no existe el documento
-      return NextResponse.json([
-        { mesaAdentro: [], mesaAdentro2: [], mesaAfuera: [] },
-      ]);
-    }
-  } catch (error) {
-    console.error("Error al obtener mesas:", error);
-    return NextResponse.json(
-      { error: "Error al obtener las mesas" },
-      { status: 500 }
-    );
-  }
-}

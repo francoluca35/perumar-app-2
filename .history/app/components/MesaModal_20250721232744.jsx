@@ -24,39 +24,6 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
       setMetodoPago(mesa.metodoPago || "");
     }
   }, [mesa]);
-  const imprimirTicket = async (productos, mesa, orden, hora, fecha) => {
-    const parrilla = productos.filter(
-      (p) => p.categoria?.toLowerCase() === "brasas"
-    );
-    const cocina = productos.filter(
-      (p) => p.categoria?.toLowerCase() !== "brasas"
-    );
-
-    const enviarAImpresora = async (items, ip) => {
-      if (items.length === 0) return;
-      try {
-        const res = await fetch("/api/print", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            mesa,
-            productos: items,
-            orden,
-            hora,
-            fecha,
-            metodoPago,
-            ip,
-          }),
-        });
-        if (!res.ok) throw new Error("No se pudo imprimir");
-      } catch (err) {
-        console.warn(`⚠️ No se pudo imprimir en ${ip}:`, err.message);
-      }
-    };
-
-    await enviarAImpresora(parrilla, "192.168.0.101");
-    await enviarAImpresora(cocina, "192.168.0.100");
-  };
 
   const enviarPedido = async () => {
     if (!pedidoActual.length) {
@@ -103,9 +70,6 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
         }),
       });
 
-      // ✅ Llamar a imprimir el ticket luego de guardar
-      await imprimirTicket(productosTotales, mesa, orden, hora, fecha);
-
       await Swal.fire({
         icon: "success",
         title: "Pedido enviado",
@@ -126,6 +90,39 @@ export default function ModalMesa({ mesa, onClose, refetch }) {
     }
   };
 
+  const imprimirTicket = async (productos, mesa, orden, hora, fecha) => {
+    const parrilla = productos.filter(
+      (p) => p.categoria?.toLowerCase() === "brasas"
+    );
+    const cocina = productos.filter(
+      (p) => p.categoria?.toLowerCase() !== "brasas"
+    );
+
+    const enviarAImpresora = async (items, ip) => {
+      if (items.length === 0) return;
+      try {
+        const res = await fetch("/api/print", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mesa,
+            productos: items,
+            orden,
+            hora,
+            fecha,
+            metodoPago,
+            ip,
+          }),
+        });
+        if (!res.ok) throw new Error("No se pudo imprimir");
+      } catch (err) {
+        console.warn(`⚠️ No se pudo imprimir en ${ip}:`, err.message);
+      }
+    };
+
+    await enviarAImpresora(parrilla, "192.168.0.101");
+    await enviarAImpresora(cocina, "192.168.0.100");
+  };
   const eliminarComanda = async () => {
     const confirmar = confirm(
       "¿Seguro que querés liberar la mesa sin comanda?"
